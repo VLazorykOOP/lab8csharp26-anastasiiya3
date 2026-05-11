@@ -1,0 +1,239 @@
+using System;
+using System.IO;
+using System.Text.RegularExpressions;
+
+class Task1
+{
+    static void Main()
+    {
+        // Створюємо тестовий файл
+        string testText = "Місто Київ має координати (50.4501, 30.5234). А Харків (49.9935, 36.2304).";
+        File.WriteAllText("input1.txt", testText);
+        
+        string text = File.ReadAllText("input1.txt");
+        string pattern = @"\(\d+\.\d+,\s*\d+\.\d+\)";
+        
+        MatchCollection matches = Regex.Matches(text, pattern);
+        Console.WriteLine($"Знайдено координат: {matches.Count}");
+        
+        foreach (Match m in matches)
+        {
+            Console.WriteLine($"Координата: {m.Value}");
+        }
+        
+        // Заміна
+        string modifiedText = Regex.Replace(text, @"\(\d+\.\d+,\s*\d+\.\d+\)", "(0.0000, 0.0000)");
+        File.WriteAllText("output1.txt", modifiedText);
+        
+        Console.WriteLine("Результат збережено у output1.txt");
+        Console.WriteLine(modifiedText);
+    }
+}
+
+using System;
+using System.IO;
+using System.Text.RegularExpressions;
+
+class Task2
+{
+    static void Main()
+    {
+        string testText = "to go to school wonder beautiful care less prepare carend softre";
+        File.WriteAllText("input2.txt", testText);
+        
+        string text = File.ReadAllText("input2.txt");
+        Console.WriteLine($"Оригінал: {text}");
+        
+        // Видалення слів із закінченнями
+        string step1 = Regex.Replace(text, @"\b\w+(re|nd|less)\b", "");
+        Console.WriteLine($"Після видалення: {step1}");
+        
+        // Заміна "to" на "at"
+        string step2 = Regex.Replace(step1, @"\bto\s+", "at ");
+        step2 = Regex.Replace(step2, @"\s+", " ");
+        
+        File.WriteAllText("output2.txt", step2.Trim());
+        Console.WriteLine($"Кінцевий результат: {step2.Trim()}");
+    }
+}
+
+using System;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+class Task3
+{
+    static void Main()
+    {
+        // Тестові тексти
+        string text1 = "кіт собака птах риба миша";
+        string text2 = "собака миша кінь";
+        
+        File.WriteAllText("text1.txt", text1);
+        File.WriteAllText("text2.txt", text2);
+        
+        string t1 = File.ReadAllText("text1.txt");
+        string t2 = File.ReadAllText("text2.txt");
+        
+        var words1 = t1.Split(' ');
+        var words2 = t2.Split(' ');
+        
+        var result = words1.Where(w => !words2.Contains(w));
+        
+        string output = string.Join(" ", result);
+        File.WriteAllText("output3.txt", output);
+        
+        Console.WriteLine($"Слова з першого тексту, яких немає в другому: {output}");
+    }
+}
+
+using System;
+using System.IO;
+
+class Task4
+{
+    static void Main()
+    {
+        double[] numbers = { 10.5, 20.3, 5.7, 40.2, 30.1, 60.4, 25.9 };
+        string binaryFile = "data.bin";
+        
+        // Запис
+        using (BinaryWriter writer = new BinaryWriter(File.Open(binaryFile, FileMode.Create)))
+        {
+            foreach (double num in numbers)
+                writer.Write(num);
+        }
+        
+        Console.WriteLine("Записані числа:");
+        for (int i = 0; i < numbers.Length; i++)
+            Console.WriteLine($"Позиція {i + 1}: {numbers[i]}");
+        
+        // Читання та пошук максимуму на непарних позиціях
+        double max = double.MinValue;
+        using (BinaryReader reader = new BinaryReader(File.Open(binaryFile, FileMode.Open)))
+        {
+            int position = 1;
+            while (reader.BaseStream.Position < reader.BaseStream.Length)
+            {
+                double value = reader.ReadDouble();
+                if (position % 2 != 0) // непарна позиція (1, 3, 5...)
+                {
+                    Console.WriteLine($"Непарна позиція {position}: {value}");
+                    if (value > max)
+                        max = value;
+                }
+                position++;
+            }
+        }
+        
+        Console.WriteLine($"\nМаксимальне значення на непарних позиціях: {max}");
+    }
+}
+
+using System;
+using System.IO;
+using System.Linq;
+
+class Task5
+{
+    static void Main()
+    {
+        string studentName = "Лазарик"; // Прізвище студента
+        
+        string basePath = @"d:\temp";
+        string folder1 = Path.Combine(basePath, $"{studentName}1");
+        string folder2 = Path.Combine(basePath, $"{studentName}2");
+        
+        // 1. Створення папок
+        Directory.CreateDirectory(folder1);
+        Directory.CreateDirectory(folder2);
+        Console.WriteLine("1. Папки створено");
+        
+        // 2.1 Створення t1.txt у папці1
+        string t1Path = Path.Combine(folder1, "t1.txt");
+        string t1Content = "Лабораторні роботи. Мова програмування C#. Лазарик ВВ\n" +
+                           "1. Шевченко Степан Іванович, 2001 року народження, місце проживання м. Суми";
+        File.WriteAllText(t1Path, t1Content);
+        Console.WriteLine("2. Файл t1.txt створено");
+        
+        // 2.2 Створення t2.txt у папці1
+        string t2Path = Path.Combine(folder1, "t2.txt");
+        string t2Content = "2. Комар Сергій Федорович, 2000 року народження, місце проживання м. Київ";
+        File.WriteAllText(t2Path, t2Content);
+        Console.WriteLine("3. Файл t2.txt створено");
+        
+        // 3. Створення t3.txt у папці2 (об'єднання t1 + t2)
+        string t3Path = Path.Combine(folder2, "t3.txt");
+        string combinedContent = File.ReadAllText(t1Path) + "\n" + File.ReadAllText(t2Path);
+        File.WriteAllText(t3Path, combinedContent);
+        Console.WriteLine("4. Файл t3.txt створено (об'єднано t1.txt та t2.txt)");
+        
+        // 4. Розгорнута інформація про створені файли
+        Console.WriteLine("\n=== Розгорнута інформація про створені файли ===");
+        ShowFileInfo(t1Path);
+        ShowFileInfo(t2Path);
+        ShowFileInfo(t3Path);
+        
+        // 5. Перенесення t2.txt у папку2
+        string t2NewPath = Path.Combine(folder2, "t2.txt");
+        if (File.Exists(t2NewPath))
+            File.Delete(t2NewPath);
+        File.Move(t2Path, t2NewPath);
+        Console.WriteLine("\n5. Файл t2.txt перенесено у папку2");
+        
+        // 6. Копіювання t1.txt у папку2
+        string t1CopyPath = Path.Combine(folder2, "t1.txt");
+        File.Copy(t1Path, t1CopyPath, true);
+        Console.WriteLine("6. Файл t1.txt скопійовано у папку2");
+        
+        // 7. Перейменування папки2 в ALL та видалення папки1
+        string allPath = Path.Combine(basePath, "ALL");
+        if (Directory.Exists(allPath))
+            Directory.Delete(allPath, true);
+        Directory.Move(folder2, allPath);
+        Directory.Delete(folder1, true);
+        Console.WriteLine("7. Папку2 перейменовано в ALL, папку1 видалено");
+        
+        // 8. Повна інформація про файли папки ALL
+        Console.WriteLine("\n=== Повна інформація про файли папки ALL ===");
+        if (Directory.Exists(allPath))
+        {
+            var files = Directory.GetFiles(allPath);
+            foreach (var file in files)
+            {
+                ShowFileInfo(file);
+            }
+        }
+        else
+        {
+            Console.WriteLine("Папку ALL не знайдено!");
+        }
+        
+        Console.WriteLine("\nВсі операції виконано успішно!");
+    }
+    
+    static void ShowFileInfo(string filePath)
+    {
+        if (File.Exists(filePath))
+        {
+            FileInfo info = new FileInfo(filePath);
+            Console.WriteLine($"Файл: {info.Name}");
+            Console.WriteLine($"  Повний шлях: {info.FullName}");
+            Console.WriteLine($"  Розмір: {info.Length} байт");
+            Console.WriteLine($"  Створено: {info.CreationTime}");
+            Console.WriteLine($"  Змінено: {info.LastWriteTime}");
+            Console.WriteLine($"  Вміст:\n{File.ReadAllText(filePath)}\n");
+        }
+        else
+        {
+            Console.WriteLine($"Файл {filePath} не існує");
+        }
+    }
+}
+
+
+
+
+
+
